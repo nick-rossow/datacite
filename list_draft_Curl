@@ -1,0 +1,7 @@
+
+curl -s \
+  -H "Accept: application/vnd.api+json; version=2" \
+  -u APN.REPO:password \
+  "https://api.test.datacite.org/dois?client-id=APN.REPO&state=draft&page[size]=100" \
+| jq -r '.data[] | "\(.id)\t"' > draft_Doi
+
