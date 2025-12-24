@@ -32,11 +32,12 @@ Spreadsheet Columns:
 Notes:
     - Test first in https://api.test.datacite.org/dois with TEST credentials/prefix.
     - Production DOIs are permanent (cannot be deleted, only updated).
-    - Change append_suffix_to_url line 65 logic as needed for your use case.
-    - Change User-Agent - line 71 - to your contact email.
+    - Change append_suffix_to_url line 66 logic as needed for your use case.
+    - Change User-Agent - line 72 - to your contact email.
     Limitations: 
         - Only allows for 1 contributor
-        - Doesn't populate the publisher ROR
+        - Publisher ROR is hardcoded to Phenomics Australia ROR
+        - Related Item is hardcoded to a specific award
     To Do:
         - Add linked ROR for supporting organisation (Node)  
 ===============================================================================
@@ -176,8 +177,26 @@ def publish_doi(metadata,
                 "affiliationIdentifierScheme": "ROR"
             }]
          }],
-        "publisher": metadata.get("Publisher"),
+        "publisher": {
+            "name": "Phenomics Australia",  
+            "schemeUri": "https://ror.org",  
+            "publisherIdentifier": "https://ror.org/0201hm243",  
+            "publisherIdentifierScheme": "ROR",  
+            "lang": "en"
+        },
         "publicationYear": int(metadata.get("publication_year")),
+        "relatedItems": [{
+            "titles": [
+                {
+                "title": "Pipeline Accelerator - Voucher Scheme - 25-26 Round 1"
+                }],
+            "relationType": "IsPartOf",
+            "publicationYear": "2025",
+            "relatedItemType": "Award",
+            "relatedItemIdentifier": {
+                "relatedItemIdentifier": "https://raid.org/10.82287/f7b08ebc",
+                "relatedItemIdentifierType": "URL"
+            }}],
         "types": {"resourceTypeGeneral": "Award"},
         "url": url_for_payload,
         "contributors": [{

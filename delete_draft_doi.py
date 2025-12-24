@@ -177,14 +177,23 @@ def main():
         published = attrs.get("published")
         registered = attrs.get("registered")
 
-        # Diagnostic print to help debug cases where fields are missing
+        # Diagnostic print to help debug cases where 'event' is missing
         print(f"Current event: {event}  state: {state}  doiStatus: {doi_status}  published: {published}  registered: {registered}")
 
-        # Delete only when 'state' equals 'draft'
-        is_draft = (state == "draft")
+        is_draft = False
+        if event == "draft":
+            is_draft = True
+        elif state == "draft":
+            is_draft = True
+        elif doi_status == "draft":
+            is_draft = True
+        elif isinstance(published, bool) and not published:
+            is_draft = True
+        elif isinstance(registered, bool) and not registered:
+            is_draft = True
 
         if not is_draft:
-            print(f"Skipping {doi}: state != 'draft' (state={state})")
+            print(f"Skipping {doi}: not a draft (evaluated fields did not indicate draft)")
             continue
 
         if args.dry_run:

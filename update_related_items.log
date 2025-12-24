@@ -1,0 +1,37 @@
+2025-12-23 12:14:10,821 - ERROR - Error fetching DOI list page 1: HTTPSConnectionPool(host='api.test.datacite.org', port=443): Read timed out. (read timeout=10)
+2025-12-23 12:20:53,872 - INFO - Prepared PATCH for 10.83986/2qpe-0t90
+2025-12-23 12:20:53,872 - INFO - Prepared PATCH for 10.83986/mpsh-1s90
+2025-12-23 12:20:53,872 - INFO - Prepared PATCH for 10.83986/p6b6-0q63
+2025-12-23 12:21:03,264 - INFO - Prepared PATCH for 10.83986/2qpe-0t90
+2025-12-23 12:21:04,992 - INFO - Successfully patched relatedItems for 10.83986/2qpe-0t90
+2025-12-23 12:21:04,992 - INFO - Prepared PATCH for 10.83986/mpsh-1s90
+2025-12-23 12:21:06,593 - INFO - Successfully patched relatedItems for 10.83986/mpsh-1s90
+2025-12-23 12:21:06,594 - INFO - Prepared PATCH for 10.83986/p6b6-0q63
+2025-12-23 12:21:08,070 - INFO - Successfully patched relatedItems for 10.83986/p6b6-0q63
+2025-12-23 12:27:48,708 - INFO - Prepared PATCH for 10.82509/0xjh-9034
+2025-12-23 12:27:48,708 - INFO - Prepared PATCH for 10.82509/amdr-k705
+2025-12-23 12:27:48,708 - INFO - Prepared PATCH for 10.82509/bd3x-ap91
+2025-12-23 12:27:48,708 - INFO - Prepared PATCH for 10.82509/cwbt-fc04
+2025-12-23 12:27:48,708 - INFO - Prepared PATCH for 10.82509/gjzk-wk86
+2025-12-23 12:27:48,708 - INFO - Prepared PATCH for 10.82509/pymc-dr28
+2025-12-23 12:27:48,709 - INFO - Prepared PATCH for 10.82509/vtza-hb24
+2025-12-23 12:27:48,709 - INFO - Prepared PATCH for 10.82509/wrk9-xb77
+2025-12-23 12:27:48,709 - INFO - Prepared PATCH for 10.82509/z11c-d329
+2025-12-23 12:27:58,451 - INFO - Prepared PATCH for 10.82509/0xjh-9034
+2025-12-23 12:28:00,520 - INFO - Successfully patched relatedItems for 10.82509/0xjh-9034
+2025-12-23 12:28:00,520 - INFO - Prepared PATCH for 10.82509/amdr-k705
+2025-12-23 12:28:02,365 - INFO - Successfully patched relatedItems for 10.82509/amdr-k705
+2025-12-23 12:28:02,366 - INFO - Prepared PATCH for 10.82509/bd3x-ap91
+2025-12-23 12:28:04,103 - INFO - Successfully patched relatedItems for 10.82509/bd3x-ap91
+2025-12-23 12:28:04,104 - INFO - Prepared PATCH for 10.82509/cwbt-fc04
+2025-12-23 12:28:05,743 - INFO - Successfully patched relatedItems for 10.82509/cwbt-fc04
+2025-12-23 12:28:05,743 - INFO - Prepared PATCH for 10.82509/gjzk-wk86
+2025-12-23 12:28:07,585 - INFO - Successfully patched relatedItems for 10.82509/gjzk-wk86
+2025-12-23 12:28:07,585 - INFO - Prepared PATCH for 10.82509/pymc-dr28
+2025-12-23 12:28:09,332 - INFO - Successfully patched relatedItems for 10.82509/pymc-dr28
+2025-12-23 12:28:09,332 - INFO - Prepared PATCH for 10.82509/vtza-hb24
+2025-12-23 12:28:11,150 - INFO - Successfully patched relatedItems for 10.82509/vtza-hb24
+2025-12-23 12:28:11,151 - INFO - Prepared PATCH for 10.82509/wrk9-xb77
+2025-12-23 12:28:13,016 - INFO - Successfully patched relatedItems for 10.82509/wrk9-xb77
+2025-12-23 12:28:13,016 - INFO - Prepared PATCH for 10.82509/z11c-d329
+2025-12-23 12:28:14,675 - INFO - Successfully patched relatedItems for 10.82509/z11c-d329

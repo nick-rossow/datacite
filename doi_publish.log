@@ -71,3 +71,11 @@
 2025-12-17 11:50:53,051 - INFO - [DRY RUN] Would send DOI request for: Wednesday 1030 (event='draft')
 2025-12-17 11:50:59,675 - INFO - DOI request successful for: Wednesday 1030 (event='draft')
 2025-12-17 11:51:01,024 - INFO - Updated URL for DOI 10.83986/hx45-6r85 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=hx45-6r85
+2025-12-23 10:53:10,780 - INFO - DOI request successful for: Wednesday 1030 (event='draft')
+2025-12-23 10:53:12,345 - INFO - Updated URL for DOI 10.83986/zwz0-qv38 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=zwz0-qv38
+2025-12-23 10:54:14,987 - INFO - DOI request successful for: Wednesday 1030 (event='draft')
+2025-12-23 10:54:16,497 - INFO - Updated URL for DOI 10.83986/rd3n-qb56 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=rd3n-qb56
+2025-12-23 10:56:02,095 - INFO - DOI request successful for: Wednesday 1030 (event='draft')
+2025-12-23 10:56:03,580 - INFO - Updated URL for DOI 10.83986/rt2a-tm71 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=rt2a-tm71
+2025-12-23 10:56:44,709 - INFO - DOI request successful for: Wednesday 1030 (event='draft')
+2025-12-23 10:56:46,172 - INFO - Updated URL for DOI 10.83986/2qpe-0t90 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=2qpe-0t90

@@ -10,12 +10,20 @@
 - Integrate with DataCite API for DOI management.
 
 ---
+## Changes required
+  - Change append_suffix_to_url line 65 logic as needed for your use case. This is what sets the URL of the DOI 
+  - Change User-Agent - line 71 - to your contact email.
+  - Change ROR for publisher on line 179 - 185
 
+---
 ## Usage
 ```bash
 python create_DOI_v2.py <input_file> --auth <repo_id:password> [options]
 ```
-
+## How I used it
+``` bash
+python3 create_DOI_v2.py metadata.xlsx --auth <repo_id:password> --api-url https://api.test.datacite.org/dois --prefix 10.83986 --event draft --append-suffix-to-url
+```
 ---
 
 ## Required Arguments
