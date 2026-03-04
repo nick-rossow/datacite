@@ -109,3 +109,7 @@
 2026-01-29 13:30:10,433 - INFO - Updated URL for DOI 10.83986/8bwc-yf83 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=8bwc-yf83
 2026-02-16 14:06:43,836 - INFO - DOI request successful for: fresh123 (event='draft')
 2026-02-16 14:06:45,250 - INFO - Updated URL for DOI 10.83986/zzqp-hg89 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=zzqp-hg89
+2026-02-16 14:12:00,710 - INFO - DOI request successful for: fresh123 (event='draft'). DOI: 10.83986/qvb2-1894
+2026-02-16 14:12:02,154 - INFO - Updated URL for DOI 10.83986/qvb2-1894 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=qvb2-1894
+2026-03-04 11:28:07,700 - INFO - DOI request successful for: fresh123 (event='draft'). DOI: 10.83986/9jmc-1k72
+2026-03-04 11:28:09,116 - INFO - Updated URL for DOI 10.83986/9jmc-1k72 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=9jmc-1k72
