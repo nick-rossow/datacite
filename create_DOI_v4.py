@@ -1,26 +1,33 @@
  
 # =============================================================================
-# Script: create_DOI_v3.py
+# Script: create_DOI_v4.py
+# Changed format for input file to match Twishi's spreadsheet.
 # Purpose:
 #   Automate DOI creation or update via the DataCite REST API from a spreadsheet,
 #   and WRITE BACK the resulting DOI to the input file (Excel/CSV) per row.
 # Usage:
-#   python create_DOI_v3.py <input_file> --auth <repo_id:password> [options]
-# Required:
-#   file  Path to the input .xlsx or .csv file (write-back will update this file)
-#   --auth Repository credentials in format: REPO_ID:REPO_PASSWORD
-# Options:
-#   --api-url            DataCite API endpoint (default: https://api.test.datacite.org/dois)
-#                        Use production: https://api.datacite.org/dois
-#   --dry-run            Simulate run (no API calls, no write-back)
-#   --prefix             Repository prefix (required when DOI is blank to auto-generate suffix)
-#   --append-suffix-to-url
-#                        Append "?wdt_column_filter[5]=" + DOI suffix to the landing page URL.
-#                        If DOI is provided, append pre-publish; if minted, PATCH after creation.
-#   --event              DOI state: 'draft', 'publish', or 'register' (default: draft)
-#   --preflight          Run a SAFE authentication check (GET /clients/<REPO_ID>)
-#   --user-agent         Override the default User-Agent
-#   --no-backup          Do not create a timestamped backup before writing back
+#   python create_DOI_v4.py <input_file> --auth <repo_id:password> \
+#     --publication-year <year> --related-item-title <title> \
+#     --related-item-pub-year <year> --related-item-identifier <url> [options]
+# Required Arguments:
+#   file                         Path to the input .xlsx or .csv file (write-back will update this file)
+#   --auth                       Repository credentials in format: REPO_ID:REPO_PASSWORD
+#   --publication-year           Publication year to use for all DOIs
+#   --related-item-title         Title for the related item
+#   --related-item-pub-year      Publication year for the related item
+#   --related-item-identifier    Identifier URL for the related item
+#
+# Optional Arguments:
+#   --api-url                    DataCite API endpoint (default: https://api.test.datacite.org/dois)
+#                                Use production: https://api.datacite.org/dois
+#   --dry-run                    Simulate run (no API calls, no write-back)
+#   --prefix                     Repository prefix (required when DOI is blank to auto-generate suffix)
+#   --append-suffix-to-url       Append "?wdt_column_filter[5]=" + DOI suffix to the landing page URL.
+#                                If DOI is provided, append pre-publish; if minted, PATCH after creation.
+#   --event                      DOI state: 'draft', 'publish', or 'register' (default: draft)
+#   --preflight                  Run a SAFE authentication check (GET /clients/<REPO_ID>)
+#   --user-agent                 Override the default User-Agent
+#   --no-backup                  Do not create a timestamped backup before writing back
 # Notes:
 #   - Test first in https://api.test.datacite.org/dois with TEST credentials/prefix.
 #   - Production DOIs are permanent (cannot be deleted, only updated).
@@ -47,7 +54,11 @@ logging.basicConfig(
 )
 
 # Spreadsheet column names expected
-REQUIRED_FIELDS = ["title", "Creator", "Publisher", "publication_year", "url"]
+REQUIRED_FIELDS = ["project title", "first name", "last name"]
+CREATOR = "Phenomics Australia"
+CREATOR_ROR = "https://ror.org/0201hm243"
+PUBLISHER = "Phenomics Australia"
+base_url = "https://phenomicsaustralia.org.au/project"
 
 # Fixed text to place before DOI suffix when appending to the URL
 URL_SUFFIX_PREFIX = "?wdt_column_filter[5]="
@@ -60,15 +71,17 @@ DEFAULT_USER_AGENT = os.environ.get("DATACITE_USER_AGENT", "create_DOI_v3/1.0 (m
 
 
 def validate_metadata(metadata):
-    """Validate required fields and publication_year format."""
+    """Validate required fields."""
     missing_fields = [field for field in REQUIRED_FIELDS if not metadata.get(field)]
     if missing_fields:
         return False, f"Missing required fields: {', '.join(missing_fields)}"
-    try:
-        int(metadata.get("publication_year"))
-    except (ValueError, TypeError):
-        return False, "Invalid publication_year (must be an integer)"
     return True, None
+
+
+def normalize_dataframe_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Convert all column names to lowercase for case-insensitive access."""
+    df.columns = df.columns.str.lower()
+    return df
 
 
 def extract_doi_suffix(doi: Optional[str]) -> Optional[str]:
@@ -122,7 +135,11 @@ def publish_doi(
     append_suffix_flag: bool,
     prefix: Optional[str],
     event: str,
+    publication_year: int,
     user_agent: Optional[str] = None,
+    related_item_title: Optional[str] = None,
+    related_item_pub_year: Optional[str] = None,
+    related_item_identifier: Optional[str] = None,
 ) -> Tuple[Optional[bool], Optional[str]]:
     """
     Publish/transition DOI or simulate in dry-run, with optional URL suffix appending.
@@ -147,7 +164,6 @@ def publish_doi(
     else:
         doi_value = str(doi_value).strip()
 
-    base_url = str(metadata.get("url")).strip()
     url_for_payload = base_url
 
     # If DOI provided and we want to append suffix, do it pre-publish
@@ -161,32 +177,32 @@ def publish_doi(
     # Build minimal valid DataCite attributes
     attributes = {
         "event": event,  # use CLI-provided event (default: draft)
-        "titles": [{"title": metadata.get("title")}],
+        "titles": [{"title": metadata.get("project title")}],
         "creators": [{
-            "name": metadata.get("Creator"),
+            "name": CREATOR,
             "nameType": "Organizational",
             "affiliation": [{
-                "affiliationIdentifier": metadata.get("Creator_ROR"),
+                "affiliationIdentifier": CREATOR_ROR,
                 "affiliationIdentifierScheme": "ROR"
             }]
         }],
         "publisher": {
-            "name": "Phenomics Australia",
+            "name": PUBLISHER,
             "schemeUri": "https://ror.org",
-            "publisherIdentifier": "https://ror.org/0201hm243",
+            "publisherIdentifier": CREATOR_ROR,
             "publisherIdentifierScheme": "ROR",
             "lang": "en"
         },
-        "publicationYear": int(metadata.get("publication_year")),
+        "publicationYear": publication_year,
         "relatedItems": [{
             "titles": [
-                {"title": "Pipeline Accelerator - Voucher Scheme - 25-26 Round 1"}
+                {"title": related_item_title}
             ],
             "relationType": "IsPartOf",
-            "publicationYear": "2025",
+            "publicationYear": related_item_pub_year,
             "relatedItemType": "Award",
             "relatedItemIdentifier": {
-                "relatedItemIdentifier": "https://raid.org/10.82287/f7b08ebc",
+                "relatedItemIdentifier": related_item_identifier,
                 "relatedItemIdentifierType": "URL"
             }
         }],
@@ -195,9 +211,9 @@ def publish_doi(
     }
     
     # Add contributors only if name is provided
-    first_name = str(metadata.get("First name", "")).strip() if metadata.get("First Name") is not None else ""
-    last_name = str(metadata.get("Last name", "")).strip() if metadata.get("Last Name") is not None else ""
-    contrib_name = f"{first_name}, {last_name}".strip()
+    first_name = str(metadata.get("first name", "")).strip() if metadata.get("first name") is not None else ""
+    last_name = str(metadata.get("last name", "")).strip() if metadata.get("last name") is not None else ""
+    contrib_name = f"{last_name}, {first_name}".strip()
     
     if contrib_name:
         contributor = {
@@ -206,9 +222,17 @@ def publish_doi(
             "name": contrib_name,
         }
         # Add nameIdentifiers only if ORCID is present and not blank
-        orcid = metadata.get("Contrib_ORCID")
+        orcid = metadata.get("orcid")
         if orcid and pd.notna(orcid) and str(orcid).strip():
-            contributor["nameIdentifiers"] = [{"nameIdentifier": str(orcid).strip()}]
+            orcid_value = str(orcid).strip()
+            # Ensure ORCID has the full URL format
+            if not orcid_value.startswith("https://"):
+                orcid_value = f"https://orcid.org/{orcid_value}"
+            contributor["nameIdentifiers"] = [{
+                "nameIdentifier": orcid_value,
+                "nameIdentifierScheme": "ORCID",
+                "schemeURI": "https://orcid.org"
+            }]
         attributes["contributors"] = [contributor]
 
     # If no DOI provided, include prefix so API can auto-generate suffix
@@ -228,16 +252,16 @@ def publish_doi(
     payload = {"data": {"type": "dois", "attributes": attributes}}
 
     # Debug: Show payload
-    print(f"Prepared payload for '{metadata.get('title')}':\n{json.dumps(payload, indent=2)}")
+    print(f"Prepared payload for '{metadata.get('project title')}':\n{json.dumps(payload, indent=2)}")
 
     if dry_run:
-        msg = f"[DRY RUN] Would send DOI request for: {metadata.get('title')} (event='{event}')"
+        msg = f"[DRY RUN] Would send DOI request for: {metadata.get('project title')} (event='{event}')"
         print(msg)
         logging.info(msg)
         # In dry-run, return the existing DOI if present; else None
         return True, doi_value
 
-    print(f"Sending request for: {metadata.get('title')}...")
+    print(f"Sending request for: {metadata.get('project title')}...")
     headers = {"Content-Type": "application/vnd.api+json", "User-Agent": user_agent or DEFAULT_USER_AGENT}
     response = requests.post(api_url, headers=headers, auth=(username, password), data=json.dumps(payload))
     print(f"Response Status: {response.status_code}")
@@ -255,7 +279,7 @@ def publish_doi(
             or (resp_json.get("data", {}) or {}).get("attributes", {}).get("doi")
             or doi_value
         )
-        msg = f"DOI request successful for: {metadata.get('title')} (event='{event}'). DOI: {minted_doi}"
+        msg = f"DOI request successful for: {metadata.get('project title')} (event='{event}'). DOI: {minted_doi}"
         print(msg)
         logging.info(msg)
 
@@ -284,7 +308,7 @@ def publish_doi(
         return True, minted_doi
 
     else:
-        msg = f"Failed DOI request for {metadata.get('title')} (event='{event}'). Status: {response.status_code}, Error: {response.text}"
+        msg = f"Failed DOI request for {metadata.get('project title')} (event='{event}'). Status: {response.status_code}, Error: {response.text}"
         print(msg)
         logging.error(msg)
         return False, None
@@ -334,6 +358,10 @@ def main():
                         help="Run a SAFE preflight (GET /clients/<REPO_ID>) that does not create a DOI.")
     parser.add_argument("--user-agent", help="User-Agent header value (overrides DATACITE_USER_AGENT env var)")
     parser.add_argument("--no-backup", action="store_true", help="Do not create a timestamped backup before write-back")
+    parser.add_argument("--publication-year", type=int, required=True, help="Publication year to use for all DOIs")
+    parser.add_argument("--related-item-title", required=True, help="Title for the related item")
+    parser.add_argument("--related-item-pub-year", required=True, help="Publication year for the related item")
+    parser.add_argument("--related-item-identifier", required=True, help="Identifier URL for the related item")
     args = parser.parse_args()
 
     # Validate event value
@@ -369,6 +397,9 @@ def main():
     else:
         print("Error: Unsupported file type. Use .xlsx or .csv.")
         return
+    
+    # Normalize column names to lowercase for case-insensitive access
+    df = normalize_dataframe_columns(df)
 
     # Ensure a 'doi' column exists for write-back
     if 'doi' not in df.columns:
@@ -378,8 +409,9 @@ def main():
 
     # Iterate and collect results to write back
     for idx, row in df.iterrows():
+        row_dict = row.to_dict()
         result_flag, resulting_doi = publish_doi(
-            row.to_dict(),
+            row_dict,
             args.dry_run,
             args.api_url,
             username,
@@ -387,13 +419,18 @@ def main():
             args.append_suffix_to_url,
             args.prefix,
             event,
+            args.publication_year,
             args.user_agent,
+            args.related_item_title,
+            args.related_item_pub_year,
+            args.related_item_identifier,
         )
 
         if result_flag is True:
             success_count += 1
             if resulting_doi:
-                df.at[idx, 'doi'] = resulting_doi
+                full_doi_url = f"https://doi.org/{resulting_doi}"
+                df.at[idx, 'doi'] = full_doi_url
         elif result_flag is False:
             fail_count += 1
         else:
