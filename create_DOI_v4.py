@@ -13,9 +13,9 @@
 #   file                         Path to the input .xlsx or .csv file (write-back will update this file)
 #   --auth                       Repository credentials in format: REPO_ID:REPO_PASSWORD
 #   --publication-year           Publication year to use for all DOIs
-#   --related-item-title         Title for the related item
-#   --related-item-pub-year      Publication year for the related item
-#   --related-item-identifier    Identifier URL for the related item
+#   --related-item-title         Title for the related item (eg RAiD title)
+#   --related-item-pub-year      Publication year for the related item (eg RAiD year)
+#   --related-item-identifier    Identifier URL for the related item (eg RAiD URL)
 #
 # Optional Arguments:
 #   --api-url                    DataCite API endpoint (default: https://api.test.datacite.org/dois)
@@ -67,7 +67,7 @@ URL_SUFFIX_PREFIX = "?wdt_column_filter[5]="
 VALID_EVENTS = {"draft", "publish", "register"}
 
 # Default User-Agent (can be overridden via env var DATACITE_USER_AGENT or --user-agent)
-DEFAULT_USER_AGENT = os.environ.get("DATACITE_USER_AGENT", "create_DOI_v3/1.0 (mailto:nick.rossow@anu.edu.au)")
+DEFAULT_USER_AGENT = os.environ.get("DATACITE_USER_AGENT", "create_DOI_v4/1.0 (mailto:nick.rossow@anu.edu.au)")
 
 
 def validate_metadata(metadata):
@@ -404,6 +404,9 @@ def main():
     # Ensure a 'doi' column exists for write-back
     if 'doi' not in df.columns:
         df['doi'] = None
+
+    #Ensure DOI column is string-compatible (prevents dtype warning/error)
+    df['doi'] = df['doi'].astype('string')
 
     success_count, fail_count, skip_count = 0, 0, 0
 
