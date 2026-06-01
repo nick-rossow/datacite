@@ -1,7 +1,7 @@
-# create_DOI_v2.py
+# create_DOI_v4.py
 
 ## Overview
-`create_DOI_v2.py` automates **DOI creation or update** via the [DataCite REST API](https://support.datacite.org/docs/api) using data from a spreadsheet.
+`create_DOI_v4.py` automates **DOI creation or update** via the [DataCite REST API](https://support.datacite.org/docs/api) using data from a spreadsheet.
 
 ---
 
@@ -18,11 +18,11 @@
 ---
 ## Usage
 ```bash
-python create_DOI_v2.py <input_file> --auth <repo_id:password> [options]
+python create_DOI_v4.py <input_file> --auth <repo_id:password> [options]
 ```
 ## How I used it
 ``` bash
-python3 create_DOI_v2.py metadata.xlsx --auth <repo_id:password> --api-url https://api.test.datacite.org/dois --prefix 10.83986 --event draft --append-suffix-to-url
+python3 create_DOI_v4.py metadata.xlsx --auth APN.REPO:<redacted> --api-url https://api.test.datacite.org/dois --prefix 10.83986 --event draft --append-suffix-to-url --publication-year 2026 --related-item-title "Pipeline Accelerator - Voucher Scheme - 25-26 Round 1" --related-item-pub-year "2026" --related-item-identifier "https://raid.org/10.82287/f7b08ebc" 
 ```
 ---
 
@@ -63,9 +63,4 @@ title | Creator | Publisher | publication_year | url | doi (optional)
 - Test in `https://api.test.datacite.org/dois` with **TEST credentials/prefix** first.
 - **Production DOIs are permanent.**
 
----
 
-### Example Command
-```bash
-python create_DOI_v2.py sample.xlsx --auth repo123:password --prefix 10.1234 --event publish
-```
