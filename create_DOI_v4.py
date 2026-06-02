@@ -239,30 +239,32 @@ if contrib_name.strip(", "):
 
     contributors.append(researcher)
 
-# ---- Producer organisational contributor (NEW) ----
-producer = metadata.get("producer")
-if producer and pd.notna(producer) and str(producer).strip():
-    producer_contributor = {
-        "nameType": "Organizational",
-        "contributorType": "Producer",
-        "name": str(producer).strip(),
-    }
 
-    producer_ror = metadata.get("producer ror")
-    if producer_ror and pd.notna(producer_ror) and str(producer_ror).strip():
-        ror_value = str(producer_ror).strip()
-        if not ror_value.startswith("https://"):
-            ror_value = f"https://ror.org/{ror_value}"
+# ---------------- Producers (NEW MULTI SUPPORT) ----------------
+    for i in [1, 2]:
+        producer_key = f"producer {i}"
+        ror_key = f"producer {i} ror"
 
-        producer_contributor["nameIdentifiers"] = [
-            {
-                "nameIdentifier": ror_value,
-                "nameIdentifierScheme": "ROR",
-                "schemeURI": "https://ror.org",
+        producer = metadata.get(producer_key)
+        if producer and pd.notna(producer) and str(producer).strip():
+            prod = {
+                "nameType": "Organizational",
+                "contributorType": "Producer",
+                "name": str(producer).strip(),
             }
-        ]
 
-    contributors.append(producer_contributor)
+            producer_ror = metadata.get(ror_key)
+            if producer_ror and pd.notna(producer_ror) and str(producer_ror).strip():
+                ror_val = str(producer_ror).strip()
+                if not ror_val.startswith("https://"):
+                    ror_val = f"https://ror.org/{ror_val}"
+                prod["nameIdentifiers"] = [{
+                    "nameIdentifier": ror_val,
+                    "nameIdentifierScheme": "ROR",
+                    "schemeURI": "https://ror.org"}]
+
+            contributors.append(prod)
+
 
 # Attach contributors if any exist
 if contributors:
