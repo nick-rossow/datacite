@@ -210,31 +210,64 @@ def publish_doi(
         "url": url_for_payload,
     }
     
-    # Add contributors only if name is provided
-    first_name = str(metadata.get("first name", "")).strip() if metadata.get("first name") is not None else ""
-    last_name = str(metadata.get("last name", "")).strip() if metadata.get("last name") is not None else ""
-    contrib_name = f"{last_name}, {first_name}".strip()
-    
-    if contrib_name:
-        contributor = {
-            "nameType": "Personal",
-            "contributorType": "Researcher",
-            "name": contrib_name,
-        }
-        # Add nameIdentifiers only if ORCID is present and not blank
-        orcid = metadata.get("orcid")
-        if orcid and pd.notna(orcid) and str(orcid).strip():
-            orcid_value = str(orcid).strip()
-            # Ensure ORCID has the full URL format
-            if not orcid_value.startswith("https://"):
-                orcid_value = f"https://orcid.org/{orcid_value}"
-            contributor["nameIdentifiers"] = [{
+    contributors = []
+
+# ---- Personal Researcher contributor (existing behaviour) ----
+first_name = str(metadata.get("first name", "")).strip() if metadata.get("first name") is not None else ""
+last_name = str(metadata.get("last name", "")).strip() if metadata.get("last name") is not None else ""
+
+contrib_name = f"{last_name}, {first_name}".strip()
+if contrib_name.strip(", "):
+    researcher = {
+        "nameType": "Personal",
+        "contributorType": "Researcher",
+        "name": contrib_name,
+    }
+
+    orcid = metadata.get("orcid")
+    if orcid and pd.notna(orcid) and str(orcid).strip():
+        orcid_value = str(orcid).strip()
+        if not orcid_value.startswith("https://"):
+            orcid_value = f"https://orcid.org/{orcid_value}"
+        researcher["nameIdentifiers"] = [
+            {
                 "nameIdentifier": orcid_value,
                 "nameIdentifierScheme": "ORCID",
-                "schemeURI": "https://orcid.org"
-            }]
-        attributes["contributors"] = [contributor]
+                "schemeURI": "https://orcid.org",
+            }
+        ]
 
+    contributors.append(researcher)
+
+# ---- Producer organisational contributor (NEW) ----
+producer = metadata.get("producer")
+if producer and pd.notna(producer) and str(producer).strip():
+    producer_contributor = {
+        "nameType": "Organizational",
+        "contributorType": "Producer",
+        "name": str(producer).strip(),
+    }
+
+    producer_ror = metadata.get("producer ror")
+    if producer_ror and pd.notna(producer_ror) and str(producer_ror).strip():
+        ror_value = str(producer_ror).strip()
+        if not ror_value.startswith("https://"):
+            ror_value = f"https://ror.org/{ror_value}"
+
+        producer_contributor["nameIdentifiers"] = [
+            {
+                "nameIdentifier": ror_value,
+                "nameIdentifierScheme": "ROR",
+                "schemeURI": "https://ror.org",
+            }
+        ]
+
+    contributors.append(producer_contributor)
+
+# Attach contributors if any exist
+if contributors:
+    attributes["contributors"] = contributors
+    
     # If no DOI provided, include prefix so API can auto-generate suffix
     if doi_value:
         attributes["doi"] = doi_value
@@ -389,14 +422,22 @@ def main():
             print("Test: https://api.test.datacite.org/dois  Production: https://api.datacite.org/dois")
             return
 
+    
     # Read input
     if args.file.endswith(".xlsx"):
-        df = pd.read_excel(args.file)
+        sheet_name = "sheet1"  # default sheet name (case-insensitive)
+        try:
+            df = pd.read_excel(args.file, sheet_name=sheet_name)
+        except ValueError:
+            print(f"Error: Excel file does not contain a sheet named '{sheet_name}'.")
+            print("Please create the sheet and try again.")
+            return
     elif args.file.endswith(".csv"):
         df = pd.read_csv(args.file)
     else:
         print("Error: Unsupported file type. Use .xlsx or .csv.")
         return
+
     
     # Normalize column names to lowercase for case-insensitive access
     df = normalize_dataframe_columns(df)
