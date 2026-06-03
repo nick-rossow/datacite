@@ -427,7 +427,7 @@ def main():
     
     # Read input
     if args.file.endswith(".xlsx"):
-        sheet_name = "sheet1"  # default sheet name (case-insensitive)
+        sheet_name = "Successful"  # default sheet name (case-insensitive)
         try:
             df = pd.read_excel(args.file, sheet_name=sheet_name)
         except ValueError:
