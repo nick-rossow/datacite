@@ -10,6 +10,14 @@
 - Integrate with DataCite API for DOI management.
 
 ---
+## Spreadsheet Columns
+```
+first name | last name | orcid | project title | producer 1 | producer 1 ror | producer 2 | producer 2 ror | url | doi (optional)
+```
+- If DOI is blank, `--prefix` is required.
+- `publication_year` must be an integer.
+
+---
 ## Changes required
   - Change append_suffix_to_url line 65 logic as needed for your use case. This is what sets the URL of the DOI 
   - Change User-Agent - line 71 - to your contact email.
@@ -46,19 +54,19 @@ python3 create_DOI_v4.py metadata.xlsx --auth APN.REPO:<redacted> --api-url http
 | `--prefix` | Repository prefix (required when DOI is blank to auto-generate suffix). |
 | `--append-suffix-to-url` | Append `"?wdt_column_filter[5]=" + DOI suffix` to the landing page URL. If DOI is provided, append pre-publish; if minted, PATCH after creation. |
 | `--event` | DOI state: `draft`, `publish`, or `register` (default: `draft`). |
-| `--preflight` | Run a safe authentication check (`GET /clients/<REPO_ID>`) that does **not** create a DOI (disabled by default). |
+| `--publication-year` | Year the voucher was awarded|
+| `--related-item-title` | the name of the voucher round (RAiD title) |
+| `--related-item-pub-year` | year of the voucher round |
+| `--related-item-identifier` | full RAiD URL |
 
 ---
 
-## Spreadsheet Columns
-```
-title | Creator | Publisher | publication_year | url | doi (optional)
-```
-- If DOI is blank, `--prefix` is required.
-- `publication_year` must be an integer.
+## Producer
+If there is two nodes listed on the voucher as producers these can be split into the producer 1 and producer 2 fields.
+Each producer is created as "contributor" in the DOI schema.
+The ROR for each producer is also captured in the contributor name identifier field.
 
 ---
-
 ## Notes
 - Test in `https://api.test.datacite.org/dois` with **TEST credentials/prefix** first.
 - **Production DOIs are permanent.**
