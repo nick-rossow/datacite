@@ -209,38 +209,38 @@ def publish_doi(
         "types": {"resourceTypeGeneral": "Award"},
         "url": url_for_payload,
     }
-    
+
     contributors = []
 
-# ---- Personal Researcher contributor (existing behaviour) ----
-first_name = str(metadata.get("first name", "")).strip() if metadata.get("first name") is not None else ""
-last_name = str(metadata.get("last name", "")).strip() if metadata.get("last name") is not None else ""
+    # ---- Personal Researcher contributor (existing behaviour) ----
+    first_name = str(metadata.get("first name", "")).strip() if metadata.get("first name") is not None else ""
+    last_name = str(metadata.get("last name", "")).strip() if metadata.get("last name") is not None else ""
 
-contrib_name = f"{last_name}, {first_name}".strip()
-if contrib_name.strip(", "):
-    researcher = {
-        "nameType": "Personal",
-        "contributorType": "Researcher",
-        "name": contrib_name,
-    }
+    contrib_name = f"{last_name}, {first_name}".strip()
+    if contrib_name.strip(", "):
+        researcher = {
+            "nameType": "Personal",
+            "contributorType": "Researcher",
+            "name": contrib_name,
+        }
 
-    orcid = metadata.get("orcid")
-    if orcid and pd.notna(orcid) and str(orcid).strip():
-        orcid_value = str(orcid).strip()
-        if not orcid_value.startswith("https://"):
-            orcid_value = f"https://orcid.org/{orcid_value}"
-        researcher["nameIdentifiers"] = [
-            {
-                "nameIdentifier": orcid_value,
-                "nameIdentifierScheme": "ORCID",
-                "schemeURI": "https://orcid.org",
-            }
-        ]
+        orcid = metadata.get("orcid")
+        if orcid and pd.notna(orcid) and str(orcid).strip():
+            orcid_value = str(orcid).strip()
+            if not orcid_value.startswith("https://"):
+                orcid_value = f"https://orcid.org/{orcid_value}"
+            researcher["nameIdentifiers"] = [
+                {
+                    "nameIdentifier": orcid_value,
+                    "nameIdentifierScheme": "ORCID",
+                    "schemeURI": "https://orcid.org",
+                }
+            ]
 
-    contributors.append(researcher)
+        contributors.append(researcher)
 
 
-# ---------------- Producers (NEW MULTI SUPPORT) ----------------
+    # ---------------- Producers (NEW MULTI SUPPORT) ----------------
     for i in [1, 2]:
         producer_key = f"producer {i}"
         ror_key = f"producer {i} ror"
@@ -266,87 +266,87 @@ if contrib_name.strip(", "):
             contributors.append(prod)
 
 
-# Attach contributors if any exist
-if contributors:
-    attributes["contributors"] = contributors
-    
-    # If no DOI provided, include prefix so API can auto-generate suffix
-    if doi_value:
-        attributes["doi"] = doi_value
-    else:
-        if not prefix:
-            msg = (
-                "Skipping row: DOI is empty but no --prefix provided. "
-                "Add --prefix <your-prefix> (e.g., 10.5072) to mint DOIs without specifying a suffix."
+    # Attach contributors if any exist
+    if contributors:
+        attributes["contributors"] = contributors
+        
+        # If no DOI provided, include prefix so API can auto-generate suffix
+        if doi_value:
+            attributes["doi"] = doi_value
+        else:
+            if not prefix:
+                msg = (
+                    "Skipping row: DOI is empty but no --prefix provided. "
+                    "Add --prefix <your-prefix> (e.g., 10.5072) to mint DOIs without specifying a suffix."
+                )
+                print(msg)
+                logging.error(msg)
+                return None, None
+            attributes["prefix"] = prefix
+
+        payload = {"data": {"type": "dois", "attributes": attributes}}
+
+        # Debug: Show payload
+        print(f"Prepared payload for '{metadata.get('project title')}':\n{json.dumps(payload, indent=2)}")
+
+        if dry_run:
+            msg = f"[DRY RUN] Would send DOI request for: {metadata.get('project title')} (event='{event}')"
+            print(msg)
+            logging.info(msg)
+            # In dry-run, return the existing DOI if present; else None
+            return True, doi_value
+
+        print(f"Sending request for: {metadata.get('project title')}...")
+        headers = {"Content-Type": "application/vnd.api+json", "User-Agent": user_agent or DEFAULT_USER_AGENT}
+        response = requests.post(api_url, headers=headers, auth=(username, password), data=json.dumps(payload))
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Body: {response.text}")
+
+        if response.status_code == 201:
+            # Success — work out the DOI we should write back
+            resp_json = {}
+            try:
+                resp_json = response.json()
+            except Exception:
+                pass
+            minted_doi = (
+                (resp_json.get("data", {}) or {}).get("id")
+                or (resp_json.get("data", {}) or {}).get("attributes", {}).get("doi")
+                or doi_value
             )
+            msg = f"DOI request successful for: {metadata.get('project title')} (event='{event}'). DOI: {minted_doi}"
+            print(msg)
+            logging.info(msg)
+
+            # If suffix appending requested but DOI was minted now, PATCH the URL with full suffix
+            if append_suffix_flag and not doi_value and minted_doi:
+                try:
+                    raw_suffix = extract_doi_suffix(minted_doi)
+                    if raw_suffix:
+                        full_suffix = build_full_suffix(raw_suffix)
+                        updated_url = append_suffix_to_url(base_url, full_suffix)
+                        print(f"Minted DOI: {minted_doi}. Appending full suffix '{full_suffix}' to URL and PATCHing...")
+                        patch_payload = {"data": {"id": minted_doi, "type": "dois", "attributes": {"url": updated_url}}}
+                        base = api_url.rstrip("/")
+                        patch_url = f"{base}/{minted_doi}"
+                        patch_headers = {"Content-Type": "application/vnd.api+json", "User-Agent": user_agent or DEFAULT_USER_AGENT}
+                        patch_resp = requests.patch(patch_url, headers=patch_headers, auth=(username, password), data=json.dumps(patch_payload))
+                        print(f"PATCH Status: {patch_resp.status_code}")
+                        print(f"PATCH Body: {patch_resp.text}")
+                        if patch_resp.status_code in (200, 201):
+                            logging.info(f"Updated URL for DOI {minted_doi} to {updated_url}")
+                        else:
+                            logging.error(f"Failed to update URL for DOI {minted_doi}: {patch_resp.status_code} {patch_resp.text}")
+                except Exception as e:
+                    print(f"Error handling minted DOI URL update: {e}")
+                    logging.error(f"Error handling minted DOI URL update: {e}")
+            return True, minted_doi
+
+        else:
+            msg = f"Failed DOI request for {metadata.get('project title')} (event='{event}'). Status: {response.status_code}, Error: {response.text}"
             print(msg)
             logging.error(msg)
-            return None, None
-        attributes["prefix"] = prefix
-
-    payload = {"data": {"type": "dois", "attributes": attributes}}
-
-    # Debug: Show payload
-    print(f"Prepared payload for '{metadata.get('project title')}':\n{json.dumps(payload, indent=2)}")
-
-    if dry_run:
-        msg = f"[DRY RUN] Would send DOI request for: {metadata.get('project title')} (event='{event}')"
-        print(msg)
-        logging.info(msg)
-        # In dry-run, return the existing DOI if present; else None
-        return True, doi_value
-
-    print(f"Sending request for: {metadata.get('project title')}...")
-    headers = {"Content-Type": "application/vnd.api+json", "User-Agent": user_agent or DEFAULT_USER_AGENT}
-    response = requests.post(api_url, headers=headers, auth=(username, password), data=json.dumps(payload))
-    print(f"Response Status: {response.status_code}")
-    print(f"Response Body: {response.text}")
-
-    if response.status_code == 201:
-        # Success — work out the DOI we should write back
-        resp_json = {}
-        try:
-            resp_json = response.json()
-        except Exception:
-            pass
-        minted_doi = (
-            (resp_json.get("data", {}) or {}).get("id")
-            or (resp_json.get("data", {}) or {}).get("attributes", {}).get("doi")
-            or doi_value
-        )
-        msg = f"DOI request successful for: {metadata.get('project title')} (event='{event}'). DOI: {minted_doi}"
-        print(msg)
-        logging.info(msg)
-
-        # If suffix appending requested but DOI was minted now, PATCH the URL with full suffix
-        if append_suffix_flag and not doi_value and minted_doi:
-            try:
-                raw_suffix = extract_doi_suffix(minted_doi)
-                if raw_suffix:
-                    full_suffix = build_full_suffix(raw_suffix)
-                    updated_url = append_suffix_to_url(base_url, full_suffix)
-                    print(f"Minted DOI: {minted_doi}. Appending full suffix '{full_suffix}' to URL and PATCHing...")
-                    patch_payload = {"data": {"id": minted_doi, "type": "dois", "attributes": {"url": updated_url}}}
-                    base = api_url.rstrip("/")
-                    patch_url = f"{base}/{minted_doi}"
-                    patch_headers = {"Content-Type": "application/vnd.api+json", "User-Agent": user_agent or DEFAULT_USER_AGENT}
-                    patch_resp = requests.patch(patch_url, headers=patch_headers, auth=(username, password), data=json.dumps(patch_payload))
-                    print(f"PATCH Status: {patch_resp.status_code}")
-                    print(f"PATCH Body: {patch_resp.text}")
-                    if patch_resp.status_code in (200, 201):
-                        logging.info(f"Updated URL for DOI {minted_doi} to {updated_url}")
-                    else:
-                        logging.error(f"Failed to update URL for DOI {minted_doi}: {patch_resp.status_code} {patch_resp.text}")
-            except Exception as e:
-                print(f"Error handling minted DOI URL update: {e}")
-                logging.error(f"Error handling minted DOI URL update: {e}")
-        return True, minted_doi
-
-    else:
-        msg = f"Failed DOI request for {metadata.get('project title')} (event='{event}'). Status: {response.status_code}, Error: {response.text}"
-        print(msg)
-        logging.error(msg)
-        return False, None
+            return False, None
 
 
 def _make_backup_if_needed(path: str, no_backup: bool) -> Optional[str]:

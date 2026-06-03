@@ -737,3 +737,16 @@ $(window).on('pageLoad', function(e, state){
 2026-06-01 12:43:56,378 - INFO - Updated URL for DOI 10.83986/a18x-ys97 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=a18x-ys97
 2026-06-01 12:49:40,204 - INFO - DOI request successful for: Development of a Primary CNS Lymphoma (PCNSL)-Brain Organoid co-culture model (event='draft'). DOI: 10.83986/vf32-2x34
 2026-06-01 12:49:41,701 - INFO - Updated URL for DOI 10.83986/vf32-2x34 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=vf32-2x34
+2026-06-03 11:56:01,160 - INFO - [DRY RUN] Would send DOI request for: This is an example row (event='draft')
+2026-06-03 11:56:01,163 - INFO - [DRY RUN] Would send DOI request for: nan (event='draft')
+2026-06-03 11:56:01,164 - INFO - [DRY RUN] Would send DOI request for: nan (event='draft')
+2026-06-03 11:56:01,164 - INFO - [DRY RUN] Would send DOI request for: nan (event='draft')
+2026-06-03 11:57:18,795 - INFO - [DRY RUN] Would send DOI request for: This is an example row (event='draft')
+2026-06-03 11:57:33,689 - INFO - DOI request successful for: This is an example row (event='draft'). DOI: 10.83986/gwqc-ca37
+2026-06-03 11:57:34,978 - INFO - Updated URL for DOI 10.83986/gwqc-ca37 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=gwqc-ca37
+2026-06-03 12:04:51,184 - INFO - DOI request successful for: This is an example row (event='draft'). DOI: 10.83986/37kn-r936
+2026-06-03 12:04:52,596 - INFO - Updated URL for DOI 10.83986/37kn-r936 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=37kn-r936
+2026-06-03 12:11:08,078 - INFO - DOI request successful for: This is an example row (event='draft'). DOI: 10.83986/v3mq-nz10
+2026-06-03 12:11:09,553 - INFO - Updated URL for DOI 10.83986/v3mq-nz10 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=v3mq-nz10
+2026-06-03 12:12:22,189 - INFO - DOI request successful for: This is an example row (event='draft'). DOI: 10.83986/xf0m-j854
+2026-06-03 12:12:23,685 - INFO - Updated URL for DOI 10.83986/xf0m-j854 to https://phenomicsaustralia.org.au/project?wdt_column_filter[5]=xf0m-j854
